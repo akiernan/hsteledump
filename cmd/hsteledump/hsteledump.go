@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/tokuhirom/go-hsperfdata/hsperfdata"
 )
@@ -28,17 +29,22 @@ func main() {
 		return
 	}
 
-	for _, dir := range os.Args {
-		repo, err := hsperfdata.NewDir(dir)
-		if err != nil {
-			log.Fatal("new", err)
-		}
-		files, err := repo.GetFiles()
+	for _, glob := range os.Args {
+		dirs, err := filepath.Glob(glob)
 		if err == nil {
-			for _, f := range files {
-				result, err := f.Read()
+			for _, dir := range dirs {
+				repo, err := hsperfdata.NewDir(dir)
+				if err != nil {
+					log.Fatal("new", err)
+				}
+				files, err := repo.GetFiles()
 				if err == nil {
-					dumpStat(result)
+					for _, f := range files {
+						result, err := f.Read()
+						if err == nil {
+							dumpStat(result)
+						}
+					}
 				}
 			}
 		}
